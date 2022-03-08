@@ -1,5 +1,8 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as f
+
+import numpy as np
 
 
 # Actor network
@@ -8,22 +11,27 @@ class ActorNetwork(nn.Module):
     def __init__(self, in_channels, out_channels, hidden_layers=(64, 64)):
         super(ActorNetwork, self).__init__()
 
-        self.__lin = []
+        self.fc1 = nn.Linear(in_channels, hidden_layers[0])
+        self.bn1 = nn.BatchNorm1d(hidden_layers[0])
+        self.fc2 = nn.Linear(hidden_layers[0], hidden_layers[1])
+        self.fc3 = nn.Linear(hidden_layers[1], out_channels)
 
-        self.__lin.append(nn.Linear(in_channels, hidden_layers[0]))
+        self.reset_params()
 
-        for hidden_layer_in, hidden_layer_out in zip(hidden_layers[:-1], hidden_layers[1:]):
-            self.__line.append(nn.Linear(hidden_layer_in, hidden_layer_out))
+    def forward(self, state):
+        x = f.relu(self.bn1(self.fc1(state)))
+        x = f.relu(self.fc2(x))
+        return f.tanh(self.fc3(x))
 
-        self.__lin.append(nn.Linear(hidden_layers[-1], out_channels))
+    def reset_params(self):
+        self.fc1.weight.data.uniform_(*self.param_init_fcn(self.fc1))
+        self.fc2.weight.data.uniform_(*self.param_init_fcn(self.fc2))
+        self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
-    def forward(self, x):
-        # Execute all layers
-        for layer in self.__lin[:-1]:
-            x = f.relu(layer(x))
-
-        # Use softmax or tanh to return a probability!
-        return f.tanh(self.__lin[-1](x))
+    def param_init_fcn(self, layer):
+        f_in = layer.weight.data.size()[0]
+        lm = 1. / np.sqrt(f_in)
+        return (-lm, lm)
 
 
 # Critic network
@@ -31,18 +39,25 @@ class CriticNetwork(nn.Module):
     def __init__(self, in_channels, out_channels, hidden_layers=(64, 64)):
         super(CriticNetwork, self).__init__()
 
-        self.__lin = []
+        self.fc1 = nn.Linear(in_channels, hidden_layers[0])
+        self.bn1 = nn.BatchNorm1d(hidden_layers[0])
+        self.fc2 = nn.Linear(hidden_layers[0] + out_channels, hidden_layers[1])
+        self.fc3 = nn.Linear(hidden_layers[1], 1)
 
-        self.__lin.append(nn.Linear(in_channels, hidden_layers[0]))
+        self.reset_params()
 
-        for hidden_layer_in, hidden_layer_out in zip(hidden_layers[:-1], hidden_layers[1:]):
-            self.__line.append(nn.Linear(hidden_layer_in, hidden_layer_out))
+    def forward(self, state, action):
+        xs = f.relu(self.bn1(self.fc1(state)))
+        x = torch.cat((xs, action), dim=1)
+        x = f.relu(self.fc2(x))
+        return self.fc3(x)
 
-        self.__lin.append(nn.Linear(hidden_layers[-1], out_channels))
+    def reset_params(self):
+        self.fc1.weight.data.uniform_(*self.param_init_fcn(self.fc1))
+        self.fc2.weight.data.uniform_(*self.param_init_fcn(self.fc2))
+        self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
-    def forward(self, x):
-        # Execute all layers
-        for layer in self.__lin[:-1]:
-            x = f.relu(layer(x))
-
-        return self.__lin[-1](x)
+    def param_init_fcn(self, layer):
+        f_in = layer.weight.data.size()[0]
+        lm = 1. / np.sqrt(f_in)
+        return (-lm, lm)
