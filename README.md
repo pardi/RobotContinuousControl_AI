@@ -17,7 +17,11 @@ Activate conda environment:
     conda activate drlnd
 
 ### Usage
-Th
+The script _main.py_ can be executed with two options:
+
+    Usage:
+        --no_training : run a single episode
+       --trainin : train the algorithm for 2k episodes
 
 
 ## The environment

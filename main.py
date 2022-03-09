@@ -131,7 +131,7 @@ if __name__ == "__main__":
         if sys.argv[1] == "--no_training":
             main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
         elif sys.argv[1] == "--training":
-            main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
+            main(file_env_path="Reacher_Linux/Reacher.x86_64", train=True)
 
 
 
