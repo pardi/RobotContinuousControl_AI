@@ -13,5 +13,5 @@ This project presents the Reinforcement Learning algorithm to solve the P2-Conti
 ## NN Hyperparameters
 
 ## The result
-
+![Tux, the Linux mascot](img/p2_continuous_control.png)
 ## Future work
