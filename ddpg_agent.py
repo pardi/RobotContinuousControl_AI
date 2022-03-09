@@ -120,5 +120,8 @@ class DDPQAgent():
         torch.save(self.critic_target.state_dict(), weight_path[:-3] + "_critic.pt")
 
     def load(self, weight_path):
-        self.actor_target.load_state_dict(torch.load(weight_path))
-        self.actor_local.load_state_dict(torch.load(weight_path))
+        self.actor_target.load_state_dict(torch.load(weight_path + "best_weight_actor.pt"))
+        self.actor_local.load_state_dict(torch.load(weight_path + "best_weight_actor.pt"))
+        self.critic_target.load_state_dict(torch.load(weight_path + "best_weight_critic.pt"))
+        self.critic_local.load_state_dict(torch.load(weight_path + "best_weight_critic.pt"))
+

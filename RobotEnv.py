@@ -3,7 +3,7 @@ from unityagents import UnityEnvironment
 
 class SingleReacherEnv(object):
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, train=True):
 
         # Load the environment
         self.unityEnv = UnityEnvironment(file_name=file_path)
@@ -15,7 +15,7 @@ class SingleReacherEnv(object):
         # Get action sizes
         self.action_size = self.brain.vector_action_space_size
 
-        env_info = self.unityEnv.reset(train_mode=True)[self.brain_name]
+        env_info = self.unityEnv.reset(train_mode=train)[self.brain_name]
         self.state_size = env_info.vector_observations.shape[1]
         self.num_agents = len(env_info.agents)
 

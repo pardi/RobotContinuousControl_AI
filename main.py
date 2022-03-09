@@ -19,19 +19,23 @@ def mov_avg(data, window):
     return ma_data
 
 
-def main(file_env_path, train=True, best_weight_path="best_weight.pt"):
+def main(file_env_path, train=True, best_weight_path="best_weights/"):
 
     # Define the device to run the code into: GPU when available, CPU otherwise
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # Load environment
-    env = SingleReacherEnv(file_env_path)
+    env = SingleReacherEnv(file_env_path, train=train)
 
     # Network parameters
     gamma = 0.99
 
     # Set number of episodes
-    n_episodes = 2000
+    if train:
+        n_episodes = 2000
+    else:
+        n_episodes = 1
+
     # Set timeout
     max_t = 1000
 
@@ -48,7 +52,11 @@ def main(file_env_path, train=True, best_weight_path="best_weight.pt"):
 
     # list containing scores from each episode
     scores = []
-    score_window_size = 10
+    if train:
+        score_window_size = 10
+    else:
+        score_window_size = 1
+
     scores_window = deque(maxlen=score_window_size)
 
     for episode in range(1, n_episodes + 1):
@@ -97,14 +105,16 @@ def main(file_env_path, train=True, best_weight_path="best_weight.pt"):
                 print('Saved better solution! Average Score: {:.2f}'.format(episode, np.mean(scores_window)))
                 agent.save(best_weight_path)
 
-    # Average all scores
-    window_avg = score_window_size
-    ma_data = mov_avg(scores, window_avg)
 
-    plt.plot(scores, alpha=0.5)
-    plt.plot(ma_data, alpha=1)
-    plt.ylabel('Rewards')
-    plt.show()
+    if train:
+        # Average all scores
+        window_avg = score_window_size
+        ma_data = mov_avg(scores, window_avg)
+
+        plt.plot(scores, alpha=0.5)
+        plt.plot(ma_data, alpha=1)
+        plt.ylabel('Rewards')
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -112,7 +122,7 @@ if __name__ == "__main__":
     #   True - for training
     #   False - for executing best weight (when present)
 
-    main(file_env_path="Reacher_Linux/Reacher.x86_64", train=True)
+    main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
 
 
 
