@@ -90,7 +90,7 @@ def main(file_env_path, train=True, best_weight_path="best_weight.pt"):
         # Check if we hit the final score
         if train:
             if np.mean(scores_window) >= final_score and np.mean(scores_window) > best_score:
-                print('\nEnvironment solved in {:d} episodes!')
+                print('\nEnvironment solved in {:d} episodes!'.format(episode))
                 solved_flag = True
 
             if solved_flag:
