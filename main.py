@@ -6,6 +6,8 @@ from RobotEnv import SingleReacherEnv
 import numpy as np
 import matplotlib.pyplot as plt
 
+import sys
+
 
 def mov_avg(data, window):
     v = deque([] * window)
@@ -121,8 +123,16 @@ if __name__ == "__main__":
     # Set training:
     #   True - for training
     #   False - for executing best weight (when present)
+    if len(sys.argv) < 2:
+        print("Input not recognised!")
+        print("Usage: --no_training : run a single episode\n"
+              "       --training : train the algorithm for 2k episodes")
+    else:
+        if sys.argv[1] == "--no_training":
+            main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
+        elif sys.argv[1] == "--training":
+            main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
 
-    main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
 
 
 

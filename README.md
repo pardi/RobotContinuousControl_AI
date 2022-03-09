@@ -2,10 +2,24 @@
 This project presents the Reinforcement Learning algorithm to solve the P2-Continuous-control project of the Udacity - 
 Deep Reinforcement Learning course.
 
-## Installation
-- Install Unity python packages (https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Installation.md)
-- Numpy
-- pyTorch
+## Getting started
+- Install Unity [python packages](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Installation.md)
+- Set up the DRLND environment [here](https://github.com/udacity/deep-reinforcement-learning#dependencies)
+- Download the Single Reacher environment from [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux.zip)
+
+### Set up
+Unzip the file into the same folder of the DRL_ContinuousControl project
+ 
+	unzip /PATH/TO/REACHER_ENV.zip /PATH/TO/DRL_ContinuousControl
+
+Activate conda environment:
+    
+    conda activate drlnd
+
+### Usage
+Th
+
+
 ## The environment
 
 The project environment comprises one robot with two spherical-joints, and a light blue sphere representing the target 
