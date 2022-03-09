@@ -38,7 +38,6 @@ class SingleReacherEnv(object):
 
         # get the current state
         state = env_info.vector_observations
-        reward = 0
 
-        return state, reward
+        return state
 

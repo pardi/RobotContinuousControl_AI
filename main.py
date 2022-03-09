@@ -31,9 +31,9 @@ def main(file_env_path, train=True, best_weight_path="best_weight.pt"):
     gamma = 0.99
 
     # Set number of episodes
-    n_episodes = 1000
+    n_episodes = 2000
     # Set timeout
-    max_t = 3000
+    max_t = 1000
 
     # Final score
     final_score = 30.0
@@ -57,9 +57,8 @@ def main(file_env_path, train=True, best_weight_path="best_weight.pt"):
         agent.reset()
 
         # Reset environment
-        state, score = env.reset()
-
-        scores = []
+        state = env.reset()
+        score = 0
 
         for t in range(max_t):
 

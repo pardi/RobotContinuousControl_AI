@@ -1,5 +1,3 @@
-import random
-
 import torch
 import torch.nn.functional as f
 from network import ActorNetwork, CriticNetwork
@@ -8,8 +6,8 @@ from noise_obj import OUNoise
 import numpy as np
 
 
-class DDPQAgent(object):
-    def __init__(self, gamma, state_size, action_size, device, actor_lr=1e-4, critic_lr=1e-3, replay_buffer_size=int(1e6), batch_size=128, polyak=0.99, target_update=20, learn_iter=10):
+class DDPQAgent():
+    def __init__(self, gamma, state_size, action_size, device, actor_lr=1e-4, critic_lr=1e-3, replay_buffer_size=int(1e6), batch_size=128, polyak=0.9999, target_update=50, learn_iter=40):
         self.gamma = gamma
         self.action_size = action_size
         self.device = device
@@ -52,7 +50,7 @@ class DDPQAgent(object):
 
         # Noise
         # action += self.noise.sample()
-        action += .2 * np.random.rand(1, 4) - 0.1
+        action += .3 * np.random.rand(1, 4) - 0.15
 
         return np.clip(action, -1, 1)
 
@@ -118,7 +116,8 @@ class DDPQAgent(object):
                     self.learn(experiences)
 
     def save(self, weight_path):
-        torch.save(self.actor_target.state_dict(), weight_path)
+        torch.save(self.actor_target.state_dict(), weight_path[:-3] + "_actor.pt")
+        torch.save(self.critic_target.state_dict(), weight_path[:-3] + "_critic.pt")
 
     def load(self, weight_path):
         self.actor_target.load_state_dict(torch.load(weight_path))
