@@ -1,4 +1,4 @@
-# P2-continuous-control
+# Continuous-control
 This project presents the Reinforcement Learning algorithm to solve the P2-Continuous-control project of the Udacity - 
 Deep Reinforcement Learning course.
 
