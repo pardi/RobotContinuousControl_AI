@@ -1,42 +1,55 @@
 import torch
 from collections import deque
-from ddpg_agent import DDPQAgent
+from network.network import DDPQAgent
 from RobotEnv import SingleReacherEnv
 
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
-import sys
+import logging
 
 
-def mov_avg(data, window):
-    v = deque([] * window)
+def mov_avg(data: list, window: int) -> list:
+    values = deque([] * window)
 
     ma_data = []
 
     for d in data:
-        v.append(d)
-        ma_data.append(np.average(v))
+        values.append(d)
+        ma_data.append(np.average(values))
 
     return ma_data
 
 
-def main(file_env_path, train=True, best_weight_path="best_weights/"):
+def run_network(params: dict) -> None:
 
     # Define the device to run the code into: GPU when available, CPU otherwise
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device(param["use_gpu"] if torch.cuda.is_available() else "cpu")
+
+    if not torch.cuda.is_available():
+        logging.warning("GPU not available, running on CPU")
 
     # Load environment
-    env = SingleReacherEnv(file_env_path, train=train)
+    env = SingleReacherEnv(params["file_env_path"], train=params["train"])
 
     # Network parameters
-    gamma = 0.99
+    agent_params = {"gamma": params["gamma"],
+                    "state_size": env.state_size,
+                    "action_size": env.action_size,
+                    "device": device,
+                    "actor_lr": 1e-4,
+                    "critic_lr": 1e-3,
+                    "replay_buffer_size": int(1e6),
+                    "batch_size": 128,
+                    "polyak": 0.9999,
+                    "target_update": 50,
+                    "learn_iter": 40}
+    # Create agent
+    agent = DDPQAgent(agent_params)
 
     # Set number of episodes
-    if train:
-        n_episodes = 2000
-    else:
-        n_episodes = 1
+    n_episodes = params["n_episodes"]
 
     # Set timeout
     max_t = 1000
@@ -46,15 +59,13 @@ def main(file_env_path, train=True, best_weight_path="best_weights/"):
     best_score = 0
     solved_flag = False
 
-    # Create agent
-    agent = DDPQAgent(gamma, env.state_size, env.action_size, device)
-
-    if not train:
-        agent.load(best_weight_path)
+    if not params["train"]:
+        agent.load(params["best_weight_folder"])
 
     # list containing scores from each episode
     scores = []
-    if train:
+
+    if params["train"]:
         score_window_size = 10
     else:
         score_window_size = 1
@@ -78,7 +89,7 @@ def main(file_env_path, train=True, best_weight_path="best_weights/"):
             # Get (s', r)
             next_state, reward, done, _ = env.step(action)
 
-            if train:
+            if params["train"]:
                 # Update Actor-Critic with (s, a, r, s')
                 agent.step(state, action, reward, next_state, done, t)
 
@@ -98,17 +109,16 @@ def main(file_env_path, train=True, best_weight_path="best_weights/"):
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(episode, np.mean(scores_window)))
 
         # Check if we hit the final score
-        if train:
+        if params["train"]:
             if np.mean(scores_window) >= final_score and np.mean(scores_window) > best_score:
-                print('\nEnvironment solved in {:d} episodes!'.format(episode))
+                logging.info(f"Environment solved in {episode} episodes!")
                 solved_flag = True
 
             if solved_flag:
-                print('Saved better solution! Average Score: {:.2f}'.format(episode, np.mean(scores_window)))
-                agent.save(best_weight_path)
+                logging.info(f"Saved better solution! Episode: {episode} Average Score: {np.mean(scores_window)}")
+                agent.save(params["best_weight_folder"])
 
-
-    if train:
+    if params["train"]:
         # Average all scores
         window_avg = score_window_size
         ma_data = mov_avg(scores, window_avg)
@@ -120,18 +130,28 @@ def main(file_env_path, train=True, best_weight_path="best_weights/"):
 
 
 if __name__ == "__main__":
-    # Set training:
-    #   True - for training
-    #   False - for executing best weight (when present)
-    if len(sys.argv) < 2:
-        print("Input not recognised!")
-        print("Usage: --no_training : run a single episode\n"
-              "       --training : train the algorithm for 2k episodes")
-    else:
-        if sys.argv[1] == "--no_training":
-            main(file_env_path="Reacher_Linux/Reacher.x86_64", train=False)
-        elif sys.argv[1] == "--training":
-            main(file_env_path="Reacher_Linux/Reacher.x86_64", train=True)
+
+    parser = argparse.ArgumentParser(description='This program trains and/or executes a DDPG agent to solve the '
+                                                 'Reacher environment. The network uses a AC architecture with two '
+                                                 'hidden layers.')
+
+    parser.add_argument('--train', action='store_true', help='Run a single episode', choices=[True, False],
+                        default=False)
+    parser.add_argument('--num_episodes', action='store_true', help='Number of episodes to run in training mode',
+                        default=1)
+    parser.add_argument('--best_weight_folder', action='store_true', help='Folder storing the weights for the network',
+                        default="best_weights/")
+    parser.add_argument('--use_gpu', action='store_true', help='Use GPU',  choices=[True, False], default=True)
+    args = parser.parse_args()
+
+    param = {"train": args.train,
+             "num_episodes": args.num_episodes,
+             "best_weight_folder": args.best_weight_folder,
+             "use_gpu": "cuda:0" if args.use_gpu == "True" else "cpu",
+             "gamma": 0.99,
+             "file_env_path": "Reacher_Linux/Reacher.x86_64"}
+
+    run_network(param)
 
 
 
