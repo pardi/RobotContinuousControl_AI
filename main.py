@@ -25,7 +25,7 @@ def mov_avg(data: list, window: int) -> list:
 def run_network(params: dict) -> None:
 
     # Define the device to run the code into: GPU when available, CPU otherwise
-    device = torch.device(param["use_gpu"] if torch.cuda.is_available() else "cpu")
+    device = torch.device(params["use_gpu"] if torch.cuda.is_available() else "cpu")
 
     if not torch.cuda.is_available():
         logging.warning("GPU not available, running on CPU")
